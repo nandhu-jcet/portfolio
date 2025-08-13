@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>AngamTech Admin Dashboard</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+
+  <!-- Internal CSS -->
+  <style>
+    :root{
+      --sidebar-bg:#0f172a;
+      --sidebar-active:#1e293b;
+      --brand:#2b6cff;
+      --bg:#f5f7fb;
+      --card-border:#e8ecf2;
+      --text:#0b1220;
+      --muted:#6b7280;
+      --purple:#7c3aed;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      font-family:"Inter", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    /* Sidebar */
+    .sidebar{
+      position:fixed;
+      inset:0 auto 0 0;
+      width:270px;
+      background:var(--sidebar-bg);
+      color:#cbd5e1;
+      border-right:1px solid rgba(255,255,255,.06);
+      z-index:1040;
+      transform:translateX(0);
+      transition:transform .25s ease, width .25s ease;
+    }
+    .sidebar .sidebar-brand{
+      height:64px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .brand-icon{
+      width:34px;height:34px;border-radius:9px;
+      background:linear-gradient(135deg, #2563eb, #06b6d4);
+      color:#fff;font-size:18px;
+    }
+    .sidebar .brand-text{color:#fff;font-size:1.05rem}
+    .sidebar-nav{
+      padding:6px;
+    }
+    .sidebar .nav-link{
+      display:flex;align-items:center;gap:.75rem;
+      color:#cbd5e1;border-radius:10px;padding:.6rem .8rem;margin:.2rem 6px;
+      transition:background .2s,color .2s, transform .2s;
+    }
+    .sidebar .nav-link i{font-size:1.1rem;width:22px;opacity:.9}
+    .sidebar .nav-link span{white-space:nowrap}
+    .sidebar .nav-link:hover{background:#122140;color:#fff;transform:translateX(2px)}
+    .sidebar .nav-link.active{background:var(--sidebar-active);color:#fff;font-weight:600}
+    .sidebar .logout{color:#fca5a5}
+    .sidebar .logout:hover{background:#3b1f1f;color:#fff}
+
+    @media (max-width: 991.98px){
+      .sidebar{transform:translateX(-100%)}
+      .sidebar.show{transform:translateX(0)}
+    }
+
+    /* Content area */
+    .content{
+      margin-left:270px;
+      min-height:100vh;
+      transition:margin-left .25s ease;
+    }
+    @media (max-width: 991.98px){
+      .content{margin-left:0}
+    }
+
+    /* Top bar */
+    .topbar{
+      position:sticky;top:0;z-index:1000;
+      background:#fff;border-bottom:1px solid var(--card-border);
+      padding:.75rem 1rem;
+    }
+    .topbar .avatar{
+      width:36px;height:36px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .xsmall{font-size:.75rem}
+
+    /* Cards */
+    .card{
+      border:1px solid var(--card-border);
+      border-radius:16px;
+      box-shadow:0 1px 0 rgba(16,24,40,.02), 0 1px 2px rgba(16,24,40,.06);
+    }
+    .card-header{
+      border-bottom-color:var(--card-border);
+      padding:.8rem 1rem;
+    }
+    .card-body{padding:1rem 1rem}
+    @media (min-width:1200px){
+      .card-body{padding:1.2rem 1.25rem}
+    }
+
+    /* Stat cards */
+    .stat-card .stat-icon{
+      width:46px;height:46px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.3rem;box-shadow:inset 0 0 0 1px rgba(0,0,0,.04);
+    }
+    .stat-card .trend{font-size:.8rem;margin-top:.25rem}
+
+    /* Buttons */
+    .btn-action{
+      display:flex;align-items:center;gap:.6rem;
+      padding:.8rem 1rem;border-radius:12px;font-weight:600;border:0;
+      box-shadow:0 1px 0 rgba(16,24,40,.02), 0 1px 2px rgba(16,24,40,.06);
+      transition:transform .15s ease, box-shadow .15s ease;
+    }
+    .btn-action i{font-size:1.1rem}
+    .btn-action:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(2,8,23,.08)}
+    .btn-violet{background:#ede9fe;color:#5b21b6}
+    .btn-orange{background:#ffedd5;color:#9a3412}
+
+    /* Activity */
+    .activity{margin:0}
+    .activity-item{
+      display:flex;align-items:center;gap:.8rem;padding:.6rem 0;
+      border-bottom:1px dashed var(--card-border);
+    }
+    .activity-item:last-child{border-bottom:0}
+    .avatar{
+      width:40px;height:40px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      font-weight:700;
+    }
+    .avatar-sm{width:34px;height:34px;border-radius:10px;font-size:.9rem}
+
+    .text-purple{color:var(--purple)}
+    .bg-purple-subtle{background:color-mix(in oklab, var(--purple) 18%, white)}
+    .badge{font-weight:600}
+
+    /* Mini cards */
+    .mini-card{
+      border:1px solid var(--card-border);border-radius:12px;background:#fff;
+      padding:.85rem 1rem;
+      transition:transform .15s ease, box-shadow .15s ease;
+    }
+    .mini-card:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(16,24,40,.08)}
+
+    /* Reveal animation */
+    .reveal{opacity:0;transform:translateY(12px);transition:opacity .5s ease, transform .5s ease}
+    .reveal.revealed{opacity:1;transform:translateY(0)}
+    .reveal[data-reveal-delay="50"]{transition-delay:.05s}
+    .reveal[data-reveal-delay="100"]{transition-delay:.1s}
+    .reveal[data-reveal-delay="150"]{transition-delay:.15s}
+
+    /* Dropdown button subtle style */
+    .btn-outline-secondary{
+      --bs-btn-color:#64748b;--bs-btn-border-color:#cbd5e1;
+      --bs-btn-hover-bg:#f1f5f9;--bs-btn-hover-border-color:#cbd5e1;
+    }
+
+    /* Utility */
+    .text-secondary{color:var(--muted)!important}
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar d-flex flex-column">
+    <div class="sidebar-brand d-flex align-items-center gap-2 px-3">
+      <div class="brand-icon d-inline-flex align-items-center justify-content-center">
+        <i class="bi bi-hexagon-fill"></i>
+      </div>
+      <span class="brand-text fw-bold">AngamTech</span>
+      <button class="btn btn-sm btn-outline-light ms-auto d-lg-none" id="closeSidebar" aria-label="Close sidebar">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav mt-3 flex-grow-1">
+      <a class="nav-link active" href="#"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+      <a class="nav-link" href="#"><i class="bi bi-people"></i><span>User Management</span></a>
+      <a class="nav-link" href="#"><i class="bi bi-list-check"></i><span>Task Management</span></a>
+      <a class="nav-link" href="#"><i class="bi bi-kanban"></i><span>Project Management</span></a>
+      <a class="nav-link" href="#"><i class="bi bi-calendar-check"></i><span>Attendance</span></a>
+      <a class="nav-link" href="#"><i class="bi bi-chat-dots"></i><span>Communication</span></a>
+      <a class="nav-link" href="#"><i class="bi bi-building"></i><span>College/Batch</span></a>
+      <a class="nav-link" href="#"><i class="bi bi-graph-up"></i><span>Analytics</span></a>
+      <a class="nav-link" href="#"><i class="bi bi-journal-bookmark"></i><span>Courses</span></a>
+      <a class="nav-link" href="#"><i class="bi bi-door-open"></i><span>Leave Management</span></a>
+      <a class="nav-link" href="#"><i class="bi bi-gear"></i><span>Settings</span></a>
+    </nav>
+
+    <div class="mt-auto px-3 pb-3">
+      <a class="nav-link logout" href="#"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main id="content" class="content">
+    <!-- Topbar -->
+    <header class="topbar d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-start gap-3">
+        <button id="openSidebar" class="btn btn-outline-secondary d-lg-none"><i class="bi bi-list"></i></button>
+        <div>
+          <h5 class="mb-1 fw-bold">Welcome, Admin Sarah</h5>
+          <div class="text-secondary small">Here’s what’s happening at AngamTech today</div>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-light position-relative">
+          <i class="bi bi-bell"></i>
+          <span class="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle p-1"> </span>
+        </button>
+        <div class="d-flex align-items-center gap-2">
+          <div class="avatar bg-primary-subtle text-primary fw-bold">SJ</div>
+          <div class="d-none d-sm-block">
+            <div class="fw-semibold small">Sarah Johnson</div>
+            <div class="text-secondary xsmall">Administrator</div>
+          </div>
+          <i class="bi bi-chevron-down text-secondary d-none d-sm-block"></i>
+        </div>
+      </div>
+    </header>
+
+    <div class="container-fluid py-3 py-lg-4">
+      <!-- Stats -->
+      <div class="row g-3 g-lg-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card stat-card reveal" data-reveal-delay="0">
+            <div class="card-body d-flex">
+              <div class="me-auto">
+                <div class="text-secondary small mb-1">Active Users</div>
+                <div class="h3 fw-bold"><span class="count-num" data-target="247">0</span></div>
+                <div class="trend text-success"><i class="bi bi-arrow-up-right"></i> +12% from last week</div>
+              </div>
+              <div class="stat-icon bg-primary-subtle text-primary">
+                <i class="bi bi-person-badge"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card stat-card reveal" data-reveal-delay="50">
+            <div class="card-body d-flex">
+              <div class="me-auto">
+                <div class="text-secondary small mb-1">Task Completion</div>
+                <div class="h3 fw-bold"><span class="count-num" data-target="89">0</span>%</div>
+                <div class="trend text-success"><i class="bi bi-arrow-up-right"></i> +5% from yesterday</div>
+              </div>
+              <div class="stat-icon bg-info-subtle text-info">
+                <i class="bi bi-clipboard2-check"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card stat-card reveal" data-reveal-delay="100">
+            <div class="card-body d-flex">
+              <div class="me-auto">
+                <div class="text-secondary small mb-1">Projects Active</div>
+                <div class="h3 fw-bold"><span class="count-num" data-target="23">0</span></div>
+                <div class="trend text-warning"><i class="bi bi-exclamation-triangle"></i> 3 due this week</div>
+              </div>
+              <div class="stat-icon bg-success-subtle text-success">
+                <i class="bi bi-kanban"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="card stat-card reveal" data-reveal-delay="150">
+            <div class="card-body d-flex">
+              <div class="me-auto">
+                <div class="text-secondary small mb-1">Attendance Rate</div>
+                <div class="h3 fw-bold"><span class="count-num" data-target="92">0</span>%</div>
+                <div class="trend text-primary"><i class="bi bi-flag"></i> Above target</div>
+              </div>
+              <div class="stat-icon bg-warning-subtle text-warning">
+                <i class="bi bi-calendar-check"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="row g-3 g-lg-4 mt-1">
+        <div class="col-12 col-xl-6">
+          <div class="card reveal" data-reveal-delay="0">
+            <div class="card-header bg-transparent d-flex align-items-center">
+              <div class="fw-semibold">Task Progress</div>
+              <div class="ms-auto">
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span id="taskRangeLabel">Last 7 days</span>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li><button class="dropdown-item task-range" data-range="7">Last 7 days</button></li>
+                    <li><button class="dropdown-item task-range" data-range="30">Last 30 days</button></li>
+                    <li><button class="dropdown-item task-range" data-range="90">Last 90 days</button></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <canvas id="taskChart" height="110"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+          <div class="card reveal" data-reveal-delay="50">
+            <div class="card-header bg-transparent d-flex align-items-center">
+              <div class="fw-semibold">Attendance Trends</div>
+              <div class="ms-auto">
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span id="attRangeLabel">This month</span>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li><button class="dropdown-item att-range" data-range="week">This week</button></li>
+                    <li><button class="dropdown-item att-range" data-range="month">This month</button></li>
+                    <li><button class="dropdown-item att-range" data-range="quarter">This quarter</button></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <canvas id="attChart" height="110"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions + activity -->
+      <div class="row g-3 g-lg-4 mt-1">
+        <div class="col-12 col-xl-6">
+          <div class="card reveal" data-reveal-delay="0">
+            <div class="card-header bg-transparent fw-semibold">Quick Actions</div>
+            <div class="card-body">
+              <div class="d-grid gap-3">
+                <button class="btn btn-action btn-primary"><i class="bi bi-person-plus"></i> Add New User</button>
+                <button class="btn btn-action btn-success"><i class="bi bi-folder-plus"></i> Create Project</button>
+                <button class="btn btn-action btn-violet"><i class="bi bi-megaphone"></i> Send Announcement</button>
+                <button class="btn btn-action btn-orange"><i class="bi bi-file-earmark-bar-graph"></i> Generate Report</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+          <div class="card reveal" data-reveal-delay="50">
+            <div class="card-header bg-transparent fw-semibold">Recent Activity</div>
+            <div class="card-body">
+              <ul class="list-unstyled activity">
+                <li class="activity-item">
+                  <div class="avatar avatar-sm bg-info-subtle text-info"><i class="bi bi-clipboard-check"></i></div>
+                  <div class="flex-grow-1">
+                    <div><span class="fw-semibold">John Smith</span> completed task “API Documentation”</div>
+                    <div class="xsmall text-secondary">2 minutes ago</div>
+                  </div>
+                  <span class="badge rounded-pill bg-success-subtle text-success">Completed</span>
+                </li>
+                <li class="activity-item">
+                  <div class="avatar avatar-sm bg-primary-subtle text-primary"><i class="bi bi-person-plus"></i></div>
+                  <div class="flex-grow-1">
+                    <div><span class="fw-semibold">Emma Wilson</span> joined project “Mobile App Development”</div>
+                    <div class="xsmall text-secondary">15 minutes ago</div>
+                  </div>
+                  <span class="badge rounded-pill bg-primary-subtle text-primary">Joined</span>
+                </li>
+                <li class="activity-item">
+                  <div class="avatar avatar-sm bg-warning-subtle text-warning"><i class="bi bi-bell"></i></div>
+                  <div class="flex-grow-1">
+                    <div><span class="fw-semibold">Mike Johnson</span> requested leave for tomorrow</div>
+                    <div class="xsmall text-secondary">1 hour ago</div>
+                  </div>
+                  <span class="badge rounded-pill bg-warning-subtle text-warning">Pending</span>
+                </li>
+                <li class="activity-item">
+                  <div class="avatar avatar-sm bg-purple-subtle text-purple"><i class="bi bi-upload"></i></div>
+                  <div class="flex-grow-1">
+                    <div><span class="fw-semibold">Lisa Chen</span> uploaded new course materials</div>
+                    <div class="xsmall text-secondary">3 hours ago</div>
+                  </div>
+                  <span class="badge rounded-pill bg-purple-subtle text-purple">Upload</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overview + Batches -->
+      <div class="row g-3 g-lg-4 mt-1">
+        <div class="col-12 col-xl-6">
+          <div class="card reveal" data-reveal-delay="0">
+            <div class="card-header bg-transparent fw-semibold">College Overview</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-12">
+                  <div class="mini-card">
+                    <div class="d-flex align-items-center gap-3">
+                      <div class="avatar bg-primary-subtle text-primary"><i class="bi bi-mortarboard"></i></div>
+                      <div class="flex-grow-1">
+                        <div class="fw-semibold">MIT College</div>
+                        <div class="xsmall text-secondary">3 active batches</div>
+                      </div>
+                      <div class="text-success small fw-semibold">85 students</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="mini-card">
+                    <div class="d-flex align-items-center gap-3">
+                      <div class="avatar bg-success-subtle text-success"><i class="bi bi-mortarboard-fill"></i></div>
+                      <div class="flex-grow-1">
+                        <div class="fw-semibold">Stanford University</div>
+                        <div class="xsmall text-secondary">2 active batches</div>
+                      </div>
+                      <div class="text-primary small fw-semibold">62 students</div>
+                    </div>
+                  </div>
+                </div>
+              </div>  
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+          <div class="card reveal" data-reveal-delay="50">
+            <div class="card-header bg-transparent fw-semibold">Active Batches</div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-12">
+                  <div class="mini-card">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="fw-semibold">Batch 2025-A</div>
+                        <div class="xsmall text-secondary">Full Stack Development</div>
+                      </div>
+                      <div class="text-end">
+                        <div class="xsmall text-secondary">32 students</div>
+                        <div class="badge rounded-pill bg-success-subtle text-success mt-1">92% attendance</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="mini-card">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="fw-semibold">Batch 2025-B</div>
+                        <div class="xsmall text-secondary">Data Science</div>
+                      </div>
+                      <div class="text-end">
+                        <div class="xsmall text-secondary">28 students</div>
+                        <div class="badge rounded-pill bg-warning-subtle text-warning mt-1">88% attendance</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>  
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <!-- Inline JS for interactions and charts -->
+  <script>
+    // Sidebar toggling on mobile
+    const sidebar = document.getElementById('sidebar');
+    document.getElementById('openSidebar')?.addEventListener('click', () => sidebar.classList.add('show'));
+    document.getElementById('closeSidebar')?.addEventListener('click', () => sidebar.classList.remove('show'));
+
+    // Reveal on view
+    const observer = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting){
+          e.target.classList.add('revealed');
+          observer.unobserve(e.target);
+        }
+      });
+    },{threshold:.15});
+    document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+    // Count-up animation
+    function countUp(el, to) {
+      const dur = 900;
+      const start = performance.now();
+      const from = 0;
+      const step = (now) => {
+        const p = Math.min(1, (now - start) / dur);
+        const eased = 1 - Math.pow(1 - p, 3);
+        const val = Math.round(from + (to - from) * eased);
+        el.textContent = val;
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+    document.querySelectorAll('.count-num').forEach(el=>{
+      const target = Number(el.dataset.target || '0');
+      setTimeout(()=>countUp(el, target), 300);
+    });
+
+    // Charts
+    let taskChart, attChart;
+    const ctxTask = document.getElementById('taskChart').getContext('2d');
+    const ctxAtt  = document.getElementById('attChart').getContext('2d');
+
+    function makeGradient(ctx, color){
+      const g = ctx.createLinearGradient(0, 0, 0, 180);
+      g.addColorStop(0, color + 'CC'); // 80% alpha
+      g.addColorStop(1, color + '00'); // 0% alpha
+      return g;
+    }
+
+    function generateSeries(points, base=60, variance=20){
+      const arr = [];
+      let cur = base;
+      for(let i=0;i<points;i++){
+        cur += (Math.random()-.5)*variance;
+        cur = Math.max(0, cur);
+        arr.push(Number(cur.toFixed(1)));
+      }
+      return arr;
+    }
+
+    function labelsForDays(n){
+      const arr=[];
+      for(let i=n-1;i>=0;i--){
+        const d = new Date();
+        d.setDate(d.getDate()-i);
+        arr.push(d.toLocaleDateString(undefined,{month:'short', day:'numeric'}));
+      }
+      return arr;
+    }
+
+    function initTask(range=7){
+      const data = generateSeries(range, 60, 12);
+      const gradient = makeGradient(ctxTask, '#3b82f6'); // blue
+      if(taskChart) taskChart.destroy();
+      taskChart = new Chart(ctxTask, {
+        type: 'line',
+        data: {
+          labels: labelsForDays(range),
+          datasets: [{
+            label:'Completed',
+            data,
+            fill:true,
+            tension:.35,
+            borderColor:'#2563eb',
+            backgroundColor: gradient,
+            pointRadius:0,
+            borderWidth:2
+          }]
+        },
+        options: {
+          responsive:true,
+          plugins:{legend:{display:false}, tooltip:{mode:'index', intersect:false}},
+          scales:{
+            x:{grid:{display:false}, ticks:{color:'#6b7280'}},
+            y:{grid:{color:'#eef2f7'}, ticks:{color:'#6b7280'}, beginAtZero:true, suggestedMax:100}
+          }
+        }
+      });
+      document.getElementById('taskRangeLabel').textContent = `Last ${range} days`;
+    }
+
+    function initAttendance(range='month'){
+      const gradient = makeGradient(ctxAtt, '#10b981');
+      let points = 30;
+      if(range==='week') points = 7;
+      if(range==='quarter') points = 12; // weeks in a quarter
+      const labels = range==='quarter'
+        ? Array.from({length:points},(_,i)=>`W${i+1}`)
+        : labelsForDays(points);
+
+      const base = range==='week' ? 85 : 88;
+      const variance = range==='quarter' ? 6 : 4;
+      const data = generateSeries(points, base, variance).map(v=>Math.min(100, v));
+
+      if(attChart) attChart.destroy();
+      attChart = new Chart(ctxAtt, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label:'Attendance %',
+            data,
+            fill:true,
+            tension:.35,
+            borderColor: '#10b981',
+            backgroundColor: gradient,
+            pointRadius:0,
+            borderWidth:2
+          }]
+        },
+        options: {
+          responsive:true,
+          plugins:{legend:{display:false}, tooltip:{mode:'index', intersect:false}},
+          scales:{
+            x:{grid:{display:false}, ticks:{color:'#6b7280'}},
+            y:{grid:{color:'#eef2f7'}, ticks:{color:'#6b7280', callback:(v)=>v+'%'},
+               min:60, max:100}
+          }
+        }
+      });
+      const labelMap = {week:'This week', month:'This month', quarter:'This quarter'};
+      document.getElementById('attRangeLabel').textContent = labelMap[range];
+    }
+
+    initTask(7);
+    initAttendance('month');
+
+    document.querySelectorAll('.task-range').forEach(b=>{
+      b.addEventListener('click', e=>{
+        const r = Number(e.currentTarget.dataset.range);
+        initTask(r);
+      });
+    });
+    document.querySelectorAll('.att-range').forEach(b=>{
+      b.addEventListener('click', e=>{
+        initAttendance(e.currentTarget.dataset.range);
+      });
+    });
+  </script>
+</body>
+</html>
